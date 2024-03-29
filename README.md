@@ -9,6 +9,7 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
  <br/> &emsp;
  •	**Annotation file** - useful tissue information, including the type of segment profiled, segment area/nuclei count, and other tissue
  <br/>
+ <br/>
 •	**Quality Control (QC) & Preprocessing**: This phase is crucial for ensuring data reliability. ROI/AOI segments and genes are selected based on quality control (QC) or limit of quantification (LOQ) metrics. The following five steps should be followed in this step.
 <br/> &emsp;
  •	**Segment QC**: This process assesses sequencing quality and adequate tissue sampling for every ROI/AOI segment based on QC parameters like Raw sequencing reads, percentage of aligned, percentage of trimmed, etc. Those segments with low quality should be removed.
@@ -21,7 +22,9 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
  <br/> &emsp;
 •	**Filtering**: After establishing the LOQ, segments, and genes with a low signal are filtered out. This step refines the dataset further, ensuring a focus on significant, biologically relevant information.
 <br/>
+<br/>
 •	**Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3(Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile (3Q) is recommended. 
+<br/>
 <br/>
 For more detailed information, visit [tutorial](https://bioconductor.org/packages/devel/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
 ## GeoXM batch effect
