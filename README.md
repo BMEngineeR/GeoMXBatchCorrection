@@ -28,6 +28,7 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
 <br/>
 For more detailed information, visit [tutorial](https://bioconductor.org/packages/devel/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
 ## GeoXM batch effect
+While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical variability that can overshadow biological insights if not adequately accounted for. Batch effects, stemming from technology differences or sample preparation variations, are a significant source of such variability. These effects can lead to incorrect interpretations of biological differences, risking false discoveries. The primary goal of GeoMX datasets Batch Effect correction is to ensure the integrity of biological insights by effectively removing technical noise, enabling accurate and reliable downstream analyses.
 ## Batch effect solution
  - ## Tool name (StandR)
    [StandR tutorial](https://davislaboratory.github.io/GeoMXAnalysisWorkflow/articles/GeoMXAnalysisWorkflow.html)
