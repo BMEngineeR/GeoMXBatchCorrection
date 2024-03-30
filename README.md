@@ -11,16 +11,11 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
  <br/>
  <br/>
 •	**Quality Control (QC) & Preprocessing**: This phase is crucial for ensuring data reliability. Regions of Interest (ROI)/Areas of Interest (AOI) segments and genes are selected based on quality control (QC) or limit of quantification (LOQ) metrics. The following five steps should be followed in this step.
-<br/> &emsp;
- •	**Segment QC**: This process assesses sequencing quality and adequate tissue sampling for every ROI/AOI segment based on QC parameters like Raw sequencing reads, percentage of aligned, percentage of trimmed, etc. Those segments with low quality should be removed.
- <br/> &emsp;
- •	**Probe QC**: This process evaluates probe performance and removes those that perform poorly. It ensures that only reliable probes contribute to gene-level count data, which is essential for accurate downstream analysis.
- <br/> &emsp;
- •	**Create Gene-level Count Data**: This step constructs a gene-level count matrix. The count for any gene with multiple probes per segment is calculated as the geometric mean of those probes.
- <br/> &emsp;
- •	**Limit of Quantification (LOQ)**: Determining the LOQ for each segment allows for identifying genes expressed above background levels. This step is foundational for focusing on biologically relevant data.
- <br/> &emsp;
-•	**Filtering**: After establishing the LOQ, segments, and genes with a low signal are filtered out. This step refines the dataset further, ensuring a focus on significant, biologically relevant information.
+ -	**Segment QC**: This process assesses sequencing quality and adequate tissue sampling for every ROI/AOI segment based on QC parameters like Raw sequencing reads, percentage of aligned, percentage of trimmed, etc. Those segments with low quality should be removed.
+ -	**Probe QC**: This process evaluates probe performance and removes those that perform poorly. It ensures that only reliable probes contribute to gene-level count data, which is essential for accurate downstream analysis.
+ -	**Create Gene-level Count Data**: This step constructs a gene-level count matrix. The count for any gene with multiple probes per segment is calculated as the geometric mean of those probes.
+ -	**Limit of Quantification (LOQ)**: Determining the LOQ for each segment allows for identifying genes expressed above background levels. This step is foundational for focusing on biologically relevant data.
+ -	**Filtering**: After establishing the LOQ, segments, and genes with a low signal are filtered out. This step refines the dataset further, ensuring a focus on significant, biologically relevant information.
 <br/>
 <br/>
 •	**Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3 (Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile 3 (3Q) is recommended. 
