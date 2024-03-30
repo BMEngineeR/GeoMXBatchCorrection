@@ -10,7 +10,7 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
  •	**Annotation file** - useful tissue information, including the type of segment profiled, segment area/nuclei count, and other tissue
  <br/>
  <br/>
-•	**Quality Control (QC) & Preprocessing**: This phase is crucial for ensuring data reliability. ROI/AOI segments and genes are selected based on quality control (QC) or limit of quantification (LOQ) metrics. The following five steps should be followed in this step.
+•	**Quality Control (QC) & Preprocessing**: This phase is crucial for ensuring data reliability. Regions of Interest (ROI)/Areas of Interest (AOI) segments and genes are selected based on quality control (QC) or limit of quantification (LOQ) metrics. The following five steps should be followed in this step.
 <br/> &emsp;
  •	**Segment QC**: This process assesses sequencing quality and adequate tissue sampling for every ROI/AOI segment based on QC parameters like Raw sequencing reads, percentage of aligned, percentage of trimmed, etc. Those segments with low quality should be removed.
  <br/> &emsp;
@@ -23,7 +23,7 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
 •	**Filtering**: After establishing the LOQ, segments, and genes with a low signal are filtered out. This step refines the dataset further, ensuring a focus on significant, biologically relevant information.
 <br/>
 <br/>
-•	**Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3(Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile (3Q) is recommended. 
+•	**Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3 (Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile 3 (3Q) is recommended. 
 <br/>
 <br/>
 For more detailed information, please visit [tutorial](https://bioconductor.org/packages/devel/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
@@ -36,6 +36,16 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
    The batch effect correction method in StandR is RUV4, a method for correcting unwanted variation in high-dimensional data with negative controls, operates through a series of steps aimed at distinguishing and adjusting for variations that obscure the true signal. Firstly, it utilizes negative controls—known variables unaffected by the experimental conditions—to identify unwanted variation. This unwanted variation is then mathematically separated from the data, ensuring that subsequent analyses focus on the genuine biological differences. The approach is designed to enhance the accuracy of data interpretation by effectively mitigating the impact of confounding factors, such as batch effects, without the need for precise knowledge of the number of these unwanted factors, simplifying its application across different datasets.
    For more detailed information, please visit [StandR tutorial](https://davislaboratory.github.io/GeoMXAnalysisWorkflow/articles/GeoMXAnalysisWorkflow.html)
  - ## Why need Grid Search
+   Given the default settings, employing Batch Effect Correction (RUV4) within StandR does not efficiently discard appropriate features to distinctly separate ROI/AOI with varying cell types, while concurrently blending data from different batches to mitigate batch effects. Therefore, while retaining the framework of the StandR tool, we aim to optimize the outcomes of batch effect elimination by experimenting with various parameter configurations. In the program, three primary parameters are subject to adjustment:
+
+ - •	**normalization_methods**: We intend to explore different normalization methods, including Total Count per Million (CPM), Trimmed Mean of M-values (TMM), upper quartile, and size factor.
+
+ - •	**findNCG_topn**: This parameter determines the number of negative control genes selected from the top, with the adjustment range spanning from 100 to 1500 in increments of 200.
+
+ - •	**BatchCorrection_k**: This refers to the count of unwanted factors to be utilized. Following the guidance in RUV's documentation, it is advisable to employ the smallest possible k where the technical variation is no longer apparent, with the parameter adjustment range being from 3 to 11 in steps of 2.
+<br/>
+<br/>
+Through conducting a grid search on the aforementioned combinations of parameters, we anticipate identifying the optimal result for batch effect correction achievable with StandR.
  - ## Evaluation
    To enhance the accuracy of downstream analyses, a successful batch effect method should preserve biological variations, such as cell types, functions, and pathological conditions, by removing unnecessary features, while eliminating influences irrelevant to the study, like differences in experimental techniques and batches. Evaluation methods include graphical representations like UMAP and t-SNE, as well as indices for clustering quality such as kBET, LISI, and ASW. In this program, we will employ the following methods to assess the effectiveness of batch effect correction.
     ### KBET
