@@ -37,8 +37,7 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
    For more detailed information, please visit [StandR tutorial](https://davislaboratory.github.io/GeoMXAnalysisWorkflow/articles/GeoMXAnalysisWorkflow.html)
  - ## Why need Grid Search
  - ## Evaluation
-    remain Biology variation (cell type, condition, blablabla)
-    reduce unwanted variation (individual differences, technology differences)
+   To enhance the accuracy of downstream analyses, a successful batch effect method should preserve biological variations, such as cell types, functions, and pathological conditions, by removing unnecessary features, while eliminating influences irrelevant to the study, like differences in experimental techniques and batches. Evaluation methods include graphical representations like UMAP and t-SNE, as well as indices for clustering quality such as kBET, LISI, and ASW. In this program, we will employ the following methods to assess the effectiveness of batch effect correction.
     ### KBET
    The k-Nearest neighbor batch-effect test (kBET) is primarily utilized to assess the local mixing effect between different batches after batch correction, based on dimensionality reduction via singular value decomposition. A low rejection rate indicates effective mixing of batches (under a null hypothesis assuming uniform blending across batches, where local and overall distributions are sufficiently similar to avoid the claim of poor batch mixing). The rejection rate ranges between 0 and 1, with rates close to 0 indicating successful mitigation of batch effects, allowing cells from different batches to mix well.
    For more detailed information, please visit [KBET](https://www.nature.com/articles/s41592-018-0254-1)
