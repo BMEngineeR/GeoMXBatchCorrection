@@ -26,11 +26,11 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
  - ## Why need Grid Search
    Given the default settings, employing Batch Effect Correction (RUV4) within StandR does not efficiently discard appropriate features to distinctly separate ROI/AOI with varying cell types, while concurrently blending data from different batches to mitigate batch effects. Therefore, while retaining the framework of the StandR tool, we aim to optimize the outcomes of batch effect elimination by experimenting with various parameter configurations. In the program, three primary parameters are subject to adjustment:
 
- - **normalization_methods**: We intend to explore different normalization methods, including Total Count per Million (CPM), Trimmed Mean of M-values (TMM), upper quartile, and size factor.
+    - **normalization_methods**: We intend to explore different normalization methods, including Total Count per Million (CPM), Trimmed Mean of M-values (TMM), upper quartile, and size factor.
 
- - **findNCG_topn**: This parameter determines the number of negative control genes selected from the top, with the adjustment range spanning from 100 to 1500 in increments of 200.
+    - **findNCG_topn**: This parameter determines the number of negative control genes selected from the top, with the adjustment range spanning from 100 to 1500 in increments of 200.
 
- - **BatchCorrection_k**: This refers to the count of unwanted factors to be utilized. Following the guidance in RUV's documentation, it is advisable to employ the smallest possible k where the technical variation is no longer apparent, with the parameter adjustment range being from 3 to 11 in steps of 2.
+    - **BatchCorrection_k**: This refers to the count of unwanted factors to be utilized. Following the guidance in RUV's documentation, it is advisable to employ the smallest possible k where the technical variation is no longer apparent, with the parameter adjustment range being from 3 to 11 in steps of 2.
 
     Through conducting a grid search on the aforementioned combinations of parameters, we anticipate identifying the optimal result for batch effect correction achievable with StandR.
 
