@@ -11,9 +11,7 @@ GeoMx Digital Spatial Profiler (DSP) from NanoString is a state-of-the-art platf
     -	**Create Gene-level Count Data**: This step constructs a gene-level count matrix. The count for any gene with multiple probes per segment is calculated as the geometric mean of those probes.
     -	**Limit of Quantification (LOQ)**: Determining the LOQ for each segment allows for identifying genes expressed above background levels. This step is foundational for focusing on biologically relevant data.
     -	**Filtering**: After establishing the LOQ, segments, and genes with a low signal are filtered out. This step refines the dataset further, ensuring a focus on significant, biologically relevant information.
-- **Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3 (Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile 3 (3Q) is recommended. 
-
-For more detailed information, please visit 
+- **Normalization**: Normalization is applied to mitigate technical variations and prepare the data for analysis. The two common methods for normalization of DSP-NGS RNA data are quartile 3 (Q3) and background normalization, which should be selected given the number of negative probe counts. If the number of negative probe counts are low, quartile 3 (3Q) is recommended. For more detailed information, please visit 
 [tutorial](https://bioconductor.org/packages/devel/workflows/vignettes/GeoMxWorkflows/inst/doc/GeomxTools_RNA-NGS_Analysis.html)
 
 ## GeoXM batch effect
@@ -34,7 +32,7 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
 
  - **BatchCorrection_k**: This refers to the count of unwanted factors to be utilized. Following the guidance in RUV's documentation, it is advisable to employ the smallest possible k where the technical variation is no longer apparent, with the parameter adjustment range being from 3 to 11 in steps of 2.
 
-Through conducting a grid search on the aforementioned combinations of parameters, we anticipate identifying the optimal result for batch effect correction achievable with StandR.
+    Through conducting a grid search on the aforementioned combinations of parameters, we anticipate identifying the optimal result for batch effect correction achievable with StandR.
 
  - ## Evaluation
    To enhance the accuracy of downstream analyses, a successful batch effect method should preserve biological variations, such as cell types, functions, and pathological conditions, by removing unnecessary features, while eliminating influences irrelevant to the study, like differences in experimental techniques and batches. Evaluation methods include graphical representations like UMAP and t-SNE, as well as indices for clustering quality such as kBET, LISI, and ASW. In this program, we will employ the following methods to assess the effectiveness of batch effect correction.
