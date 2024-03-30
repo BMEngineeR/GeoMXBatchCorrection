@@ -31,16 +31,20 @@ For more detailed information, please visit [tutorial](https://bioconductor.org/
 While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical variability that can overshadow biological insights if not adequately accounted for. Batch effects, stemming from technology differences or sample preparation variations, are a significant source of such variability. These effects can lead to incorrect interpretations of biological differences, risking false discoveries. The primary goal of GeoMX datasets Batch Effect correction is to ensure the integrity of biological insights by effectively removing technical noise, enabling accurate and reliable downstream analyses.
 ## Batch effect solution
  - ## Tool name (StandR)
-   The standR package is designed as a comprehensive R/Bioconductor tool for analyzing NanoString GeoMx Digital Spatial Profiler data, addressing limitations in current bioinformatics workflows by enhancing quality control and enabling deep insights into complex gene expression within tissues' spatial contexts.
+   The standR package is designed as a comprehensive R/Bioconductor tool for analyzing NanoString GeoMx Digital Spatial Profiler data, addressing limitations in current bioinformatics workflows by enhancing quality control and enabling deep insights into complex gene expression within tissues' spatial contexts. [StandR](https://academic.oup.com/nar/article/52/1/e2/7416375)
  - ## Tool principle
+   The batch effect correction method in StandR is RUV4, a method for correcting unwanted variation in high-dimensional data with negative controls, operates through a series of steps aimed at distinguishing and adjusting for variations that obscure the true signal. Firstly, it utilizes negative controls—known variables unaffected by the experimental conditions—to identify unwanted variation. This unwanted variation is then mathematically separated from the data, ensuring that subsequent analyses focus on the genuine biological differences. The approach is designed to enhance the accuracy of data interpretation by effectively mitigating the impact of confounding factors, such as batch effects, without the need for precise knowledge of the number of these unwanted factors, simplifying its application across different datasets.
    For more detailed information, please visit [StandR tutorial](https://davislaboratory.github.io/GeoMXAnalysisWorkflow/articles/GeoMXAnalysisWorkflow.html)
  - ## Why need Grid Search
  - ## Evaluation
     remain Biology variation (cell type, condition, blablabla)
     reduce unwanted variation (individual differences, technology differences)
-    ### KBET (paper link)
-    ### Silouette (Paper link)
-    
+    ### KBET
+   The k-Nearest neighbor batch-effect test (kBET) is primarily utilized to assess the local mixing effect between different batches after batch correction, based on dimensionality reduction via singular value decomposition. A low rejection rate indicates effective mixing of batches (under a null hypothesis assuming uniform blending across batches, where local and overall distributions are sufficiently similar to avoid the claim of poor batch mixing). The rejection rate ranges between 0 and 1, with rates close to 0 indicating successful mitigation of batch effects, allowing cells from different batches to mix well.
+   For more detailed information, please visit [KBET](https://www.nature.com/articles/s41592-018-0254-1)
+    ### Silouette
+   The Silhouette Coefficient is a metric for assessing the quality of clustering. It evaluates clustering performance by combining cohesion and separation, assigning each sample a score between 0 and 1. The overall clustering effectiveness is determined by averaging these scores across all samples. This method facilitates the comparison of different algorithms or configurations on the same dataset, examining their impact on clustering outcomes.
+   For more detailed information, please visit 
 ## Code demonstration
  ()[link!]
  
