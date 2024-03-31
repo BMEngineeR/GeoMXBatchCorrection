@@ -47,7 +47,7 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
 ```{r}
 install.packages('remotes')
 packages <- c("standR", "SpatialExperiment", "limma", "scater", 
-              "ExperimentHub", "ggalluvial", "FNN", "kBET")
+              "ExperimentHub", "ggalluvial", "FNN", "kBET","scran")
 
 # Install any missing packages
 for (pkg in packages) {
