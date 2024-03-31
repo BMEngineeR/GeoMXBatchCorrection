@@ -44,5 +44,5 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
    [Silouettes](https://www.sciencedirect.com/science/article/pii/0377042787901257)
 
 ## Code demonstration
- Example code (Rmarkdown file) in code/GeoMX tutorial.Rmd
+ Example code (Rmarkdown file) in `code/GeoMX tutorial.Rmd`
  
