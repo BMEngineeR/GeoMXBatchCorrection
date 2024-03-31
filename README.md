@@ -43,6 +43,20 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
    The Silhouettes Coefficient is a metric for assessing the quality of clustering. It evaluates clustering performance by combining cohesion and separation, assigning each sample a score between 0 and 1. The overall clustering effectiveness is determined by averaging these scores across all samples. This method facilitates the comparison of different algorithms or configurations on the same dataset, examining their impact on clustering outcomes.For more detailed information, please visit
    [Silouettes](https://www.sciencedirect.com/science/article/pii/0377042787901257)
 
+## Set up environment
+```{r}
+install.packages('remotes')
+packages <- c("standR", "SpatialExperiment", "limma", "scater", 
+              "ExperimentHub", "ggalluvial", "FNN", "kBET")
+
+# Install any missing packages
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+  }
+}
+remotes::install_version(package = 'Seurat', version = package_version('4.3.0'))
+```
 ## Code demonstration
  Example code (Rmarkdown file) in `code/GeoMX tutorial.Rmd`
  
