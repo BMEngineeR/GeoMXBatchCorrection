@@ -48,7 +48,6 @@ While robust, GeoMx Digital Spatial Profiler (DSP) data often includes technical
 install.packages('remotes')
 packages <- c("standR", "SpatialExperiment", "limma", "scater", 
               "ExperimentHub", "ggalluvial", "FNN", "kBET","scran")
-
 # Install any missing packages
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE)) {
@@ -56,6 +55,10 @@ for (pkg in packages) {
   }
 }
 remotes::install_version(package = 'Seurat', version = package_version('4.3.0'))
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("standR")
 ```
 ## Code demonstration
  Example code (Rmarkdown file) in `code/GeoMX tutorial.Rmd`
