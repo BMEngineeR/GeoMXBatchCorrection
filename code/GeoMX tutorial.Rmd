@@ -64,6 +64,7 @@ cal_sil <- function(se.object = spe.list[[names(spe.list)[1]]],
 cal_kbet <- function(se.object = spe.list[[names(spe.list)[1]]],
                     # obj.name = names(spe.list)[1],
                      batch.name = "patient"){
+  set.seed(123)
   data <- assay(se.object,i = 2)
   # find HVG
   dec <-scran:: modelGeneVar(data)
@@ -135,7 +136,7 @@ for (n_m in 1:length(normalization_methods)) {
       # [to do] change factors to biological variation remain based on meta data
       # here to setup wanted biology variable
       tmp_spe <- geomxBatchCorrection(tmp_spe, factors = WantedVariable,
-                                      NCGs = metadata(tmp_spe)$NCGs, k = k)
+                                      NCGs = metadata(tmp_spe)$NCGs, k = tmp_k)
       tmp_name <- paste0(tmp_n_m, "-nNCG_", tmp_topn, "-k_", tmp_k)
       spe.list <- c(spe.list, tmp_spe)
       names(spe.list)[length(spe.list)] <- tmp_name
