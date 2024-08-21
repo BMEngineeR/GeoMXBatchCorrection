@@ -263,13 +263,12 @@ plot_batch_correction <- function(list_rank, category = 1, value = "scaled") {
 #' @examples
 ba_pca_umap <- function(spe_b, spe_a, seed = 123) {
   set.seed(seed)
-  # spe before batch correction
-  spe_b <- scater::logNormCounts(spe_b)
+  if (!"logcounts" %in% SummarizedExperiment::assayNames(spe_b)) {
+    spe_b <- scater::logNormCounts(spe_b)
+  }
   spe_b <- scater::runPCA(spe_b)
-  spe_b <- scater::runUMAP(spe_b, dimred = "PCA")
-  # spe after batch correction
-  spe_a <- scater::logNormCounts(spe_a)
   spe_a <- scater::runPCA(spe_a)
+  spe_b <- scater::runUMAP(spe_b, dimred = "PCA")
   spe_a <- scater::runUMAP(spe_a, dimred = "PCA")
   ba_spe <- list(spe_b = spe_b, spe_a = spe_a)
   return(ba_spe)
