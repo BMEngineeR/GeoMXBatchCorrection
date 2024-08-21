@@ -114,7 +114,7 @@ rank_batch_correction <- function(df_score, wanted_variable) {
   df_rank <- df_score %>% 
     dplyr::select(tag, dplyr::contains("_silhouette"), dplyr::contains("_kbet")) %>%
     tidyr::pivot_longer(-tag, names_to = "name", values_to = "value") %>%
-    tidyr::separate(name, sep = "_", into = c("variable", "score")) %>% 
+    tidyr::separate(name, sep = "_(?=silhouette|kbet)", into = c("variable", "score")) %>% 
     # for wanted variables, larger is better; for unwanted variables, smaller is better
     dplyr::mutate(value_rank = ifelse(variable %in% wanted_variable, -value, value)) %>%
     dplyr::group_by(variable, score) %>% 
