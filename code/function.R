@@ -7,33 +7,33 @@
 #' @export
 #'
 #' @examples
-cal_sil_kbet <- function(spe, batch_name = "patient", seed = 123){
-  data <- assay(spe, i = 2)
+cal_sil_kbet <- function(spe, batch_name = "patient", seed = 123) {
+  data <- SummarizedExperiment::assay(spe, i = 2)
   # find HVG
   dec <- scran::modelGeneVar(data)
   top_genes <- scran::getTopHVGs(dec, n = 1000)
   data_hvg <- t(data[rownames(data) %in% top_genes, ])
   
   # Silhoutte
-  pca.data.f <- gmodels::fast.prcomp(data_hvg, center = TRUE)
-  dd <- as.matrix(dist(pca.data.f$x[, 1:10]))
-  batch <- colData(spe)[, batch_name]
+  pca_data_f <- gmodels::fast.prcomp(data_hvg, center = TRUE)
+  dd <- as.matrix(dist(pca_data_f$x[, 1:10]))
+  batch <- SummarizedExperiment::colData(spe)[, batch_name]
   batch <- factor(
     batch,
     levels = sort(unique(batch)),
     labels = seq_along(sort(unique(batch)))
   )
-  batch.silhouette <- summary(cluster::silhouette(as.numeric(batch), dd))$avg.width
+  batch_silhouette <- summary(cluster::silhouette(as.numeric(batch), dd))$avg.width
   
   # kBET
   set.seed(seed)
-  batch <- colData(spe)[, batch_name]
+  batch <- SummarizedExperiment::colData(spe)[, batch_name]
   k0 <- floor(mean(table(batch))) #neighbourhood size: mean batch size 
-  knn <- get.knn(data_hvg, k = k0, algorithm = "cover_tree")
-  batch.estimate <- kBET(data_hvg, batch, k = k0, knn = knn,plot = F)
-  batch.kbet <- mean(batch.estimate$stats$kBET.observed)
+  knn <- FNN::get.knn(data_hvg, k = k0, algorithm = "cover_tree")
+  batch_estimate <- kBET::kBET(data_hvg, batch, k = k0, knn = knn, plot = FALSE)
+  batch_kbet <- mean(batch_estimate$stats$kBET.observed)
   
-  df_core <- data.frame(batch.silhouette, batch.kbet)
+  df_core <- data.frame(batch_silhouette, batch_kbet)
   names(df_core) <- stringr::str_c(batch_name, c("silhouette", "kbet"), sep = "_")
   return(df_core)
 }
@@ -53,17 +53,21 @@ cal_sil_kbet <- function(spe, batch_name = "patient", seed = 123){
 #'
 #' @examples
 geomx_batch_correction <- function(spe, wanted_variable, unwanted_variable, 
-                                     normalization_method, ncg_topn, ruv4_k) {
+                                   normalization_method, ncg_topn, ruv4_k) {
   if (normalization_method == "CPM") {
     .spe <- scater::logNormCounts(spe)
   } else {
-    .spe <- geomxNorm(spe, method = normalization_method)
+    .spe <- standR::geomxNorm(spe, method = normalization_method)
   }
-  .spe <- findNCGs(.spe, batch_name = unwanted_variable, top_n = ncg_topn)
+  .spe <- standR::findNCGs(.spe, batch_name = unwanted_variable, top_n = ncg_topn)
   # [to do] change factors to biological variation remain based on meta data
   # here to setup wanted biology variable
-  .spe <- geomxBatchCorrection(.spe, factors = wanted_variable,
-                               NCGs = metadata(.spe)$NCGs, k = ruv4_k)
+  .spe <- standR::geomxBatchCorrection(
+    .spe, 
+    factors = wanted_variable,
+    NCGs = S4Vectors::metadata(.spe)$NCGs, 
+    k = ruv4_k
+  )
   return(.spe)
 }
 
@@ -82,9 +86,9 @@ geomx_batch_correction <- function(spe, wanted_variable, unwanted_variable,
 #'
 #' @examples
 score_batch_correction <- function(spe, wanted_variable, unwanted_variable, 
-                                     normalization_methods, ncg_topn, ruv4_k) {
+                                   normalization_methods, ncg_topn, ruv4_k) {
   .spe <- geomx_batch_correction(spe, wanted_variable, unwanted_variable, 
-                                   normalization_methods, ncg_topn, ruv4_k)
+                                 normalization_methods, ncg_topn, ruv4_k)
   .df_score <- c(unwanted_variable, wanted_variable) %>%
     purrr::map(~ cal_sil_kbet(.spe, batch_name = .x)) %>%
     dplyr::bind_cols()
@@ -114,7 +118,7 @@ rank_batch_correction <- function(df_score, wanted_variable) {
   df_rank <- df_score %>% 
     dplyr::select(tag, dplyr::contains("_silhouette"), dplyr::contains("_kbet")) %>%
     tidyr::pivot_longer(-tag, names_to = "name", values_to = "value") %>%
-    tidyr::separate(name, sep = "_", into = c("variable", "score")) %>% 
+    tidyr::separate(name, sep = "_(?=silhouette|kbet)", into = c("variable", "score")) %>% 
     # for wanted variables, larger is better; for unwanted variables, smaller is better
     dplyr::mutate(value_rank = ifelse(variable %in% wanted_variable, -value, value)) %>%
     dplyr::group_by(variable, score) %>% 
@@ -137,7 +141,7 @@ rank_batch_correction <- function(df_score, wanted_variable) {
     dplyr::group_by(tag, score) %>% 
     dplyr::summarise(value_rank_scale = mean(value_rank_scale), .groups = "drop") %>% 
     dplyr::group_by(score) %>%
-    dplyr::mutate(rank = rank(value_rank_scale))%>% 
+    dplyr::mutate(rank = rank(value_rank_scale)) %>% 
     dplyr::ungroup()
   
   # mean rank of each batch
@@ -175,82 +179,136 @@ rank_batch_correction <- function(df_score, wanted_variable) {
 plot_batch_correction <- function(list_rank, category = 1, value = "scaled") {
   if (category == 1 & value == "scaled") {
     p <- list_rank$rank %>%
-      ggplot(aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_grid(score ~ variable) +
-      labs(title = "Individual Scaled Score") +
-      scale_x_continuous(breaks = scales::breaks_width(1))
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_grid(score ~ variable) +
+      ggplot2::labs(title = "Individual Scaled Score") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))
   }
   if (category == 1 & value == "rank") {
     p <- list_rank$rank %>%
-      ggplot(aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_grid(score ~ variable) +
-      labs(title = "Individual Score Ranking") +
-      scale_x_continuous(breaks = scales::breaks_width(1)) 
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_grid(score ~ variable) +
+      ggplot2::labs(title = "Individual Score Ranking") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1)) 
   }
   if (category == 2 & value == "scaled") {
     p <- list_rank$mean_rank_variable %>%
-      ggplot(aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_wrap(~ variable, scales = "free") +
-      labs(title = "Mean Scaled Score (per Variable)") +
-      scale_x_continuous(breaks = scales::breaks_width(1)) 
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_wrap(~ variable, scales = "free") +
+      ggplot2::labs(title = "Mean Scaled Score (per Variable)") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1)) 
   }
   if (category == 2 & value == "rank") {
     p <- list_rank$mean_rank_variable %>%
-      ggplot(aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_wrap(~ variable, scales = "free") +
-      labs(title = "Mean Scaled Score Ranking (per Variable)") +
-      scale_x_continuous(breaks = scales::breaks_width(1))   
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_wrap(~ variable, scales = "free") +
+      ggplot2::labs(title = "Mean Scaled Score Ranking (per Variable)") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))   
   }
   if (category == 3 & value == "scaled") {
     p <- list_rank$mean_rank_score %>%
-      ggplot(aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_wrap(~ score, scales = "free") +
-      labs(title = "Mean Scaled Score (per Score)") +
-      scale_x_continuous(breaks = scales::breaks_width(1))
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_wrap(~ score, scales = "free") +
+      ggplot2::labs(title = "Mean Scaled Score (per Score)") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))
   }
   if (category == 3 & value == "rank") {
     p <- list_rank$mean_rank_score %>%
-      ggplot(aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) +
-      facet_wrap(~ score, scales = "free") +
-      labs(title = "Mean Scaled Score Ranking (per Score)") +
-      scale_x_continuous(breaks = scales::breaks_width(1))
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) +
+      ggplot2::facet_wrap(~ score, scales = "free") +
+      ggplot2::labs(title = "Mean Scaled Score Ranking (per Score)") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))
   }
   if (category == 4 & value == "scaled") {
     p <- list_rank$overall_rank %>%
-      ggplot(aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) + 
-      labs(title = "Overall Mean Scaled Score") +
-      scale_x_continuous(breaks = scales::breaks_width(1))          
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = value_rank_scale, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) + 
+      ggplot2::labs(title = "Overall Mean Scaled Score") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))          
   }         
   if (category == 4 & value == "rank") {
     p <- list_rank$overall_rank %>%
-      ggplot(aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
-      geom_point(aes(shape = normalization_methods)) +
-      geom_line(aes(group = paste(normalization_methods, ncg_topn))) + 
-      labs(title = "Overall Mean Scaled Score Ranking") +
-      scale_x_continuous(breaks = scales::breaks_width(1))           
+      ggplot2::ggplot(ggplot2::aes(x = ruv4_k, y = rank, color = factor(ncg_topn))) +
+      ggplot2::geom_point(ggplot2::aes(shape = normalization_methods)) +
+      ggplot2::geom_line(ggplot2::aes(group = paste(normalization_methods, ncg_topn))) + 
+      ggplot2::labs(title = "Overall Mean Scaled Score Ranking") +
+      ggplot2::scale_x_continuous(breaks = scales::breaks_width(1))           
   }
   return(p)
 }
 
+
+#' Run PCA and UMAP for Before/After Batch Correction
+#'
+#' @param spe_b SpatialExperiment object before batch correction.
+#' @param spe_a SpatialExperiment object after batch correction.
+#' @param seed A number for random seed.
+#'
+#' @return A list of SpatialExperiment object of before/after batch correction with PCA and UMAP.
+#' @export
+#'
+#' @examples
+ba_pca_umap <- function(spe_b, spe_a, seed = 123) {
+  set.seed(seed)
+  if (!"logcounts" %in% SummarizedExperiment::assayNames(spe_b)) {
+    spe_b <- scater::logNormCounts(spe_b)
+  }
+  spe_b <- scater::runPCA(spe_b)
+  spe_a <- scater::runPCA(spe_a)
+  spe_b <- scater::runUMAP(spe_b, dimred = "PCA")
+  spe_a <- scater::runUMAP(spe_a, dimred = "PCA")
+  ba_spe <- list(spe_b = spe_b, spe_a = spe_a)
+  return(ba_spe)
+}
+
+
+#' Plot PCA and UMAP for Before/After Batch Correction
+#'
+#' @param ba_spe A list of SpatialExperiment object of before/after batch correction with PCA and UMAP (generated from `ba_pca_umap()`).
+#' @param color_by Specification of a column metadata field or a feature to colour by.
+#' @param shape_by Specification of a column metadata field or a feature to shape by.
+#' @param point_size Size of points.
+#'
+#' @return A patchwork object of 4 figures.
+#' @export
+#'
+#' @examples
+ba_plot_pca_umap <- function(ba_spe, color_by, shape_by, point_size = 5) {
+  spe_b <- ba_spe[["spe_b"]]
+  spe_a <- ba_spe[["spe_a"]]
+  p_1 <- scater::plotPCA(spe_b, colour_by = color_by, shape_by = shape_by, point_size = point_size) +
+    ggplot2::labs(title = "Before Batch Correction") +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
+  p_2 <- scater::plotUMAP(spe_b, colour_by = color_by, shape_by = shape_by, point_size = point_size)
+  p_3 <- scater::plotPCA(spe_a, colour_by = color_by, shape_by = shape_by, point_size = point_size) +
+    ggplot2::labs(title = "After Batch Correction") +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
+  p_4 <- scater::plotUMAP(spe_a, colour_by = color_by, shape_by = shape_by, point_size = point_size)
+  p <- patchwork::wrap_plots(p_1, p_2, p_3, p_4, byrow = FALSE, guides = "collect")
+  return(p)
+}
+
+
 # Demo #####
 if (FALSE) {
+  library(magrittr)
+  
   raw_exp_mat <- read.csv("data/Masked_subsample_rawexp.csv", row.names = 1)
   meta_df <- read.csv("data/Masked_subsample_metadata.csv", row.names = 1)
-  spe <- SpatialExperiment(assay = list(counts = raw_exp_mat), colData = meta_df)
+  spe <- SpatialExperiment::SpatialExperiment(assay = list(counts = raw_exp_mat), colData = meta_df)
   
   # define unwanted and wanted factors
   wanted_variable <- c("Disease", "celltype")
@@ -280,4 +338,15 @@ if (FALSE) {
   plot_batch_correction(list_rank, 2, "rank")
   plot_batch_correction(list_rank, 3, "rank")
   plot_batch_correction(list_rank, 4, "rank")
+
+  # dimensional reduction before and after batch correction
+  wanted_variable <- c("Disease", "celltype")
+  unwanted_variable <- c("patientID")
+  normalization <- "upperquartile"
+  ncg_topn <- 500
+  ruv4_k <- 5
+  spe_bc <- geomx_batch_correction(spe, wanted_variable, unwanted_variable, normalization, ncg_topn, ruv4_k)
+  ba_spe <- ba_pca_umap(spe, spe_bc)
+  ba_plot_pca_umap(ba_spe, color_by = "patientID", shape_by = "celltype", point_size = 3) +
+    patchwork::plot_annotation(title = stringr::str_c(normalization, ncg_topn, ruv4_k, sep = ", "))
 }
